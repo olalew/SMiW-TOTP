@@ -24,7 +24,7 @@ void CryptoHandler::testTOTPFunction(char* _key) {
   // decode key from base 32 and use as hmacKey
   
   uint8_t hmacKey[] = {0x4d, 0x79, 0x4c, 0x65, 0x67, 0x6f, 0x44, 0x6f, 0x6f, 0x72};
-  TOTP totp = TOTP(hmacKey, 10);
+  TOTP totp = TOTP(hmacKey, 10, 60); // 10 -> length of the key | 60 -> timestep
 
   unsigned long secondstime = rtcHandler->getTimestamp();
   Serial.println(secondstime);
