@@ -6,11 +6,11 @@
 
 
 struct Tag {
-  char* deviceUID;
-  char* totpCode;
+  String deviceUID;
+  String totpCode;
 
   bool isSuccess;
-  char* errMsg;
+  String errMsg;
 
   void printTagContent() {
     Serial.print("Device UID: ");

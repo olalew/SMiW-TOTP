@@ -16,7 +16,9 @@ public:
   CryptoHandler(RTCHandler* _rtcHandler): rtcHandler(_rtcHandler)  {}
 
   void testHashingFunction();
-  void testTOTPFunction(char* _key);
+  void testTOTPFunction(String _key);
+
+  String generateTOTPCode(String _key, unsigned long timestamp);
 };
 
 #endif

@@ -10,12 +10,13 @@ void RTCHandler::setupRTC() {
 
 unsigned long RTCHandler::getTimestamp() {
   DateTime now = rtc.now();
-  return now.secondstime();
+  return now.unixtime();
 }
 
-void RTCHandler::printTime() {
+String RTCHandler::printTime() {
 
     DateTime now = rtc.now();
+    String time = String(now.year()) + "/" + String(now.month()) + "/" + String(now.day()) + " " + String(now.hour()) + ":" + String(now.minute());
 
     Serial.print(now.year(), DEC);
     Serial.print('/');
@@ -39,4 +40,5 @@ void RTCHandler::printTime() {
     Serial.println("d");
     Serial.println();
   
+  return time;
 }

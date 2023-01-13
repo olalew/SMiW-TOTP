@@ -1,23 +1,29 @@
-/*
-  Base32.h - Library for encoding to/decoding from Base32.
-  Compatible with RFC 4648 ( http://tools.ietf.org/html/rfc4648 )
-  Created by Vladimir Tarasow, December 18, 2012.
-  Released into the public domain.
-*/
+#ifndef SERVICES_BASE32_H_
+#define SERVICES_BASE32_H_
 
-#ifndef Base32_h
-#define Base32_h
+#include <Arduino.h>
 
-#include "Arduino.h"
-#include "stdint.h"
-
-class Base32
-{
-  public:
-    Base32();
-    int toBase32(byte*, long, byte*&);
-    int toBase32(byte*, long, byte*&, boolean);
-    int fromBase32(byte*, long, byte*&);
+enum class KEY_PARSER_STATUS {
+	OK = 0,
+	UDEFINED_ERROR = 1
 };
 
-#endif
+struct ParsedKey {
+	uint8_t hmacKey[32] = { 0 };
+	int keyLength;
+
+	KEY_PARSER_STATUS status;
+};
+
+class Base32 {
+private:
+
+public:
+	Base32();
+	virtual ~Base32();
+
+	int charToInt(char c);
+	ParsedKey fromBase32String(String str);
+};
+
+#endif /* SERVICES_BASE32_H_ */

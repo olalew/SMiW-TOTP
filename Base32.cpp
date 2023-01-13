@@ -1,134 +1,90 @@
-/*
-  Base32.cpp - Library for encoding to/decoding from Base32.
-  Compatible with RFC 4648 ( http://tools.ietf.org/html/rfc4648 )
-  Created by Vladimir Tarasow, December 18, 2012.
-  Released into the public domain.
-*/
-#include "Arduino.h"
 #include "Base32.h"
-#include "stdint.h"
 
-Base32::Base32() 
-{
+Base32::Base32() {
+	// TODO Auto-generated constructor stub
+
 }
 
-int Base32::toBase32(byte* in, long length, byte*& out)
-{
-  return toBase32(in, length, out, false);
+Base32::~Base32() {
+	// TODO Auto-generated destructor stub
 }
 
-int Base32::toBase32(byte* in, long length, byte*& out, boolean usePadding)
-{
-  char base32StandardAlphabet[] = {"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"};
-  char standardPaddingChar = '='; 
-
-  int result = 0;
-  int count = 0;
-  int bufSize = 8;
-  int index = 0;
-  int size = 0; // size of temporary array
-  byte* temp = NULL;
-
-  if (length < 0 || length > 268435456LL) 
-  { 
-    return 0;
-  }
-
-  size = 8 * ceil(length / 4.0); // Calculating size of temporary array. Not very precise.
-  temp = (byte*)malloc(size); // Allocating temporary array.
-
-  if (length > 0)
-  {
-    int buffer = in[0];
-    int next = 1;
-    int bitsLeft = 8;
-    
-    while (count < bufSize && (bitsLeft > 0 || next < length))
-    {
-      if (bitsLeft < 5)
-      {
-        if (next < length)
-        {
-          buffer <<= 8;
-          buffer |= in[next] & 0xFF;
-          next++;
-          bitsLeft += 8;
-        }
-        else
-        {
-          int pad = 5 - bitsLeft;
-          buffer <<= pad;
-          bitsLeft += pad;
-        }
-      }
-      index = 0x1F & (buffer >> (bitsLeft -5));
-
-      bitsLeft -= 5;
-      temp[result] = (byte)base32StandardAlphabet[index];
-      result++;
-    }
-  }
-  
-  if (usePadding)
-  {
-    int pads = (result % 8);
-    if (pads > 0)
-    {
-      pads = (8 - pads);
-      for (int i = 0; i < pads; i++) 
-      {
-        temp[result] = standardPaddingChar;
-        result++;
-      }
-    }
-  }
-
-  out = (byte*)malloc(result);
-  memcpy(out, temp, result);
-  free(temp);
-  
-  return result;
+int Base32::charToInt(char c) {
+	switch(c) {
+		case 'A': return 0;
+		case 'B': return 1;
+		case 'C': return 2;
+		case 'D': return 3;
+		case 'E': return 4;
+		case 'F': return 5;
+		case 'G': return 6;
+		case 'H': return 7;
+		case 'I': return 8;
+		case 'J': return 9;
+		case 'K': return 10;
+		case 'L': return 11;
+		case 'M': return 12;
+		case 'N': return 13;
+		case 'O': return 14;
+		case 'P': return 15;
+		case 'Q': return 16;
+		case 'R': return 17;
+		case 'S': return 18;
+		case 'T': return 19;
+		case 'U': return 20;
+		case 'V': return 21;
+		case 'W': return 22;
+		case 'X': return 23;
+		case 'Y': return 24;
+		case 'Z': return 25;
+		case '2': return 26;
+		case '3': return 27;
+		case '4': return 28;
+		case '5': return 29;
+		case '6': return 30;
+		case '7': return 31;
+		default:
+			return -1;
+		}
 }
 
-int Base32::fromBase32(byte* in, long length, byte*& out)
-{
-  int result = 0; // Length of the array of decoded values.
+ParsedKey Base32::fromBase32String(String str) {
+	const int mask = 31;
+	const int shift = 5;
+
   int buffer = 0;
-  int bitsLeft = 0;
-  byte* temp = NULL;
+	int next = 0;
+	int bitsLeft = 0;
 
-  temp = (byte*)malloc(length); // Allocating temporary array.
+  ParsedKey parsedKey;
+	parsedKey.keyLength = 32; // sstr.length() * shift / 8;
 
-  for (int i = 0; i < length; i++)
-  {
-    byte ch = in[i];
+	for(int i = 0; i < str.length(); i++) {
+		char parsedValue = charToInt(str[i]);
 
-    // ignoring some characters: ' ', '\t', '\r', '\n', '='
-    if (ch == 0xA0 || ch == 0x09 || ch == 0x0A || ch == 0x0D || ch == 0x3D) continue;
+		if (parsedValue < 0) {
+			parsedKey.status = KEY_PARSER_STATUS::UDEFINED_ERROR;
+			return parsedKey;
+		}
 
-    // recovering mistyped: '0' -> 'O', '1' -> 'L', '8' -> 'B'
-    if (ch == 0x30) { ch = 0x4F; } else if (ch == 0x31) { ch = 0x4C; } else if (ch == 0x38) { ch = 0x42; }
-    
+		buffer <<= shift;
+		buffer |= parsedValue & mask;
+		bitsLeft += shift;
 
-    // look up one base32 symbols: from 'A' to 'Z' or from 'a' to 'z' or from '2' to '7'
-    if ((ch >= 0x41 && ch <= 0x5A) || (ch >= 0x61 && ch <= 0x7A)) { ch = ((ch & 0x1F) - 1); }
-    else if (ch >= 0x32 && ch <= 0x37) { ch -= (0x32 - 26); }
-    else { free(temp); return 0; }
+		if (bitsLeft >= 8) {
+      char value = (char)(buffer >> (bitsLeft - 8));
 
-    buffer <<= 5;    
-    buffer |= ch;
-    bitsLeft += 5;
-    if (bitsLeft >= 8)
-    {
-      temp[result] = (unsigned char)((unsigned int)(buffer >> (bitsLeft - 8)) & 0xFF);
-      result++;
-      bitsLeft -= 8;
-    }
-  }
+      Serial.println(str[i]);
+      Serial.println((uint8_t)value);
+      Serial.println();
 
-  out = (byte*)malloc(result);
-  memcpy(out, temp, result);
-  free(temp);
+			parsedKey.hmacKey[next++] = (char)(buffer >> (bitsLeft - 8));
+			bitsLeft -= 8;
+		}
+	}
 
-  return result;
+  Serial.println("PARSING DONE ...............");
+
+	parsedKey.status = KEY_PARSER_STATUS::OK;
+	return parsedKey;
 }

@@ -27,6 +27,10 @@ TOTP::TOTP(uint8_t* hmacKey, int keyLength) {
 char* TOTP::getCode(long timeStamp) {
 	
 	long steps = timeStamp / _timeStep;
+
+  Serial.println("Step ... ");
+  Serial.println(steps);
+
 	return getCodeFromSteps(steps);
 }
 

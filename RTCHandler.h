@@ -6,11 +6,13 @@
 
 class RTCHandler {
 private:
-    RTC_DS1307 rtc;
+    
     char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}; 
 public:
+    RTC_DS1307 rtc;
+
     void setupRTC();
-    void printTime();
+    String printTime();
 
     unsigned long getTimestamp();
 };

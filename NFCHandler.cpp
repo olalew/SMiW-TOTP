@@ -18,22 +18,27 @@ Tag NFCHandler::searchNFCCard() {
        if (!success) {
          Tag resultTag;
          resultTag.isSuccess = false;
-         resultTag.errMsg = strdup("Wystąpił błąd.");
+         resultTag.errMsg = "Wystąpił błąd.";
          return resultTag;
        }
 
+      String fullContent = String((char*)dataRead);
+      Serial.println("FULL CONTENT -----------------------");
+      Serial.println(fullContent);
+      Serial.println("END CONTENT -----------------------");
+
        struct Tag tag;
-       tag.deviceUID = strtok((char*)dataRead, "&");
-       tag.totpCode = strtok(NULL, "&");
+       tag.deviceUID = String(strtok((char*)dataRead, "&"));
+       tag.totpCode = String(strtok(NULL, "&"));
        tag.isSuccess = true;
-       tag.errMsg = strdup("");
+       tag.errMsg = "";
 
        return tag;
    }
 
     Tag resultTag;
     resultTag.isSuccess = false;
-    resultTag.errMsg = strdup("Nie przyłożono karty.");
+    resultTag.errMsg = "Nie przyłożono karty.";
     return resultTag;
 }
     
@@ -51,15 +56,6 @@ void NFCHandler::handleCardRead(uint8_t blockNumber, uint8_t offset) {
        Serial.print(" ");
      }
      Serial.println();
-
-     Serial.print("HANDLING CARD READ");
-
-    // identify card id
-    // read totp code
-
-    // connect with server and read totp code
-    // open
-   
 }
 
 void NFCHandler::handleCardReadFailure(uint8_t blockNumber) {
